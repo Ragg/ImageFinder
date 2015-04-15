@@ -1,0 +1,33 @@
+﻿<Window x:Class="ImageFinder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ImageFinder"
+        Title="Image Finder">
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <TextBox Grid.Column="1" Text="{Binding DatabaseFile, Mode=OneWay}" IsReadOnly="True" />
+        <Button Command="{Binding OpenDatabaseFileCommand}">Select Access File</Button>
+        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding NameFile, Mode=OneWay}" IsReadOnly="True" />
+        <Button Grid.Row="1" Command="{Binding OpenNameFileCommand}">Select Excel File</Button>
+        <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding DirectoryPath, Mode=OneWay}" IsReadOnly="True" />
+        <Button Grid.Row="2" Command="{Binding OpenDirectoryCommand}">Select Image Directory</Button>
+        <DataGrid Name="NamesDataGrid" IsReadOnly="True" Grid.Row="3" Grid.ColumnSpan="2" ItemsSource="{Binding Names}">
+            <DataGrid.InputBindings>
+                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding OpenImageCommand}"
+                              CommandParameter="{Binding ElementName=NamesDataGrid, Path=SelectedItem}" />
+            </DataGrid.InputBindings>
+        </DataGrid>
+    </Grid>
+</Window>
