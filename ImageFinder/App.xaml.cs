@@ -10,6 +10,7 @@ namespace ImageFinder
     /// </summary>
     public partial class App : Application
     {
+        //Write all unhandled exceptions to a logfile.
         private readonly StreamWriter _logFile = new StreamWriter("ImageFinder.log");
 
         private App()

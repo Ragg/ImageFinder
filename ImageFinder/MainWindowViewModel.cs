@@ -14,6 +14,7 @@ using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace ImageFinder
 {
+    //Base class for anything that needs to implement INotifyPropertyChanged
     public class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -29,6 +30,7 @@ namespace ImageFinder
         }
     }
 
+    //ICommand implementation with no parameter
     public class DelegateCommand : ICommand
     {
         private readonly Action _action;
@@ -51,6 +53,7 @@ namespace ImageFinder
         public event EventHandler CanExecuteChanged;
     }
 
+    //ICommand implementation with one parameter
     public class DelegateCommand<T> : ICommand
     {
         private readonly Action<T> _action;
@@ -100,6 +103,7 @@ namespace ImageFinder
             {
                 var connectionString = string.Format(ExcelString, value);
                 OleDbConnection connection;
+                //Check if the given Excel file is actually valid. If not, don't do anything.
                 try
                 {
                     connection = new OleDbConnection(connectionString);
@@ -110,6 +114,7 @@ namespace ImageFinder
                 }
                 try
                 {
+                    //Get the first sheet in the Excel file and display it in a DataView
                     connection.Open();
                     var sheet = GetFirstTable(connection);
                     var selectCommandText = string.Format("SELECT * FROM [{0}]", sheet);
@@ -146,11 +151,13 @@ namespace ImageFinder
 
         private static string GetFirstTable(OleDbConnection connection)
         {
+            //Get the first table or spreadsheet
             var tables = connection.GetOleDbSchemaTable(OleDbSchemaGuid.Tables, new object[] {null, null, null, "TABLE"});
             var sheet = tables.Rows[0].Field<string>("TABLE_NAME");
             return sheet;
         }
 
+        //Recursively get all the files under a directory
         private static IEnumerable<string> DirSearch(string dir)
         {
             IEnumerable<string> files;
@@ -158,6 +165,7 @@ namespace ImageFinder
             {
                 files = Directory.EnumerateFiles(dir);
             }
+                //If we don't have access to a directory just ignore it and keep going
             catch (UnauthorizedAccessException)
             {
                 yield break;
@@ -174,6 +182,7 @@ namespace ImageFinder
 
         private static string GetImageName(OleDbConnection connection, string table, string column, string name)
         {
+            //First try to get MULTI_RECORD_TYPE 2 images, then if that fails try type 1.
             for (var i = 2; i > 0; i--)
             {
                 var query = string.Format("SELECT IMAGE_ID FROM {0} WHERE {1} LIKE '{2}%' AND MULTI_RECORD_TYPE = 'Type {3}'", table, column, name, i);
@@ -208,6 +217,7 @@ namespace ImageFinder
                 dbConnection.Open();
                 var table = GetFirstTable(dbConnection);
                 var columnName = Names.Table.Columns[0].ColumnName;
+                //Look up the column name from the Excel spreadsheet in the Access database
                 var isColumnPresent = dbConnection.GetSchema("Columns").AsEnumerable().Any(a => a.Field<string>("TABLE_NAME") == table && a.Field<string>("COLUMN_NAME") == columnName);
                 if (!isColumnPresent)
                 {
@@ -240,6 +250,7 @@ namespace ImageFinder
                 var dbFile = dialog.FileName;
                 var connectionString = string.Format(AccessString, dbFile);
                 OleDbConnection connection;
+                //Try to establish a connection to the Access file to see if it's valid.
                 try
                 {
                     connection = new OleDbConnection(connectionString);
@@ -272,6 +283,7 @@ namespace ImageFinder
             {
                 DirectoryPath = dialog.SelectedPath;
                 var fc = new Dictionary<string, string>();
+                //Get all the filenames recursively when the directory is selected and store them in a Dictionary for faster lookup later.
                 foreach (var file in DirSearch(DirectoryPath))
                 {
                     var name = Path.GetFileName(file);
